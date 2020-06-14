@@ -1,43 +1,81 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
-import * as React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, RefreshControl } from 'react-native';
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
 
-export default function LinksScreen() {
-  return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <OptionButton
-        icon="md-school"
-        label="Read the Expo documentation"
-        onPress={() => WebBrowser.openBrowserAsync('https://docs.expo.io')}
-      />
 
-      <OptionButton
-        icon="md-compass"
-        label="Read the React Navigation documentation"
-        onPress={() => WebBrowser.openBrowserAsync('https://reactnavigation.org')}
-      />
 
-      <OptionButton
-        icon="ios-chatboxes"
-        label="Ask a question on the forums"
-        onPress={() => WebBrowser.openBrowserAsync('https://forums.expo.io')}
-        isLastOption
-      />
-    </ScrollView>
-  );
+
+export default class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      isRefreshing: false,
+      isLoaded: false,
+      events: []
+    };
+  }
+
+  async getEventsFromApi() {
+    var jsonResponse;
+    var list;
+    try {
+      var response = await fetch('http://192.168.43.90:3000/events', {
+        method: 'GET',
+      });
+      jsonResponse = await response.json()
+      list = await jsonResponse.events;
+      this.setState({events: list})
+    }
+    catch(error) {
+        console.error(error);
+        return null;
+    }
+  }
+
+  async componentDidMount() {
+    await this.getEventsFromApi()
+  }
+
+  _onRefresh = () => {
+    this.setState({isRefreshing: true});
+    this.getEventsFromApi().then(() => {
+      this.setState({isRefreshing: false});
+    });
+  }
+
+
+  render() {
+    return (
+      <ScrollView
+        refreshControl={<RefreshControl refreshing={this.state.isRefreshing} onRefresh={this._onRefresh} />}
+        style={styles.container} contentContainerStyle={styles.contentContainer}>
+        {this.state.events.map((ev, key) => 
+          <AccessEvent
+            key = {key}
+            accessIsGranted={ev.granted}
+            name = {ev.name?ev.name:"INTRUSO"}
+            RFID = {ev.RFID}
+            onPress={() => {}}
+          />
+        )}
+      </ScrollView>
+    );
+  }
 }
 
-function OptionButton({ icon, label, onPress, isLastOption }) {
+function AccessEvent({ name, RFID, onPress, accessIsGranted, isLastOption }) {
+  const icon = accessIsGranted?"md-checkmark":"md-alert";
+  const color = accessIsGranted?"rgba(24,163,66,1)":"rgba(207,21,4,1)"
   return (
     <RectButton style={[styles.option, isLastOption && styles.lastOption]} onPress={onPress}>
       <View style={{ flexDirection: 'row' }}>
         <View style={styles.optionIconContainer}>
-          <Ionicons name={icon} size={22} color="rgba(0,0,0,0.35)" />
+          <Ionicons name={icon} size={22} color={color} />
         </View>
         <View style={styles.optionTextContainer}>
-          <Text style={styles.optionText}>{label}</Text>
+          <Text style={styles.optionText}>{accessIsGranted?"Acesso Autorizado: " + name + " (" + RFID + ")":"Acesso Negado: " + name + " (" + RFID + ")" }</Text>
         </View>
       </View>
     </RectButton>
