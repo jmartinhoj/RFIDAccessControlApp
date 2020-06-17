@@ -29,11 +29,11 @@ export default class PeopleScreen extends React.Component {
   }
 
   async getPeopleFromApi() {
-    console.log("aqui")
+    console.log("vou ver as pessoas")
     var jsonResponse;
     var list;
     try {
-      var response = await fetch('http://192.168.43.90:3000/people', {
+      var response = await fetch('http://192.168.8.18:3000/people/', {
         method: 'GET',
       });
       console.log("tá")
@@ -78,7 +78,7 @@ export default class PeopleScreen extends React.Component {
 
 
   sendPatch = () => {
-    return fetch('http://192.168.43.90:3000/people/' + this.state.form.id , {
+    return fetch('http://192.168.8.18:3000/people/' + this.state.form.id , {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json'
@@ -94,7 +94,9 @@ export default class PeopleScreen extends React.Component {
         this.getPeopleFromApi();
         ToastAndroid.show("Utilizador Adicionado!", ToastAndroid.SHORT)
       }
-      throw new Error('Network errr');
+      else {
+        throw new Error('Network errr');
+      }
     }).catch(error => {
       ToastAndroid.show("Houve algum erro", ToastAndroid.SHORT)
       console.log('There has been a problem with your fetch operation: ', error);
@@ -102,7 +104,7 @@ export default class PeopleScreen extends React.Component {
   }
 
   addUser = () => {
-    return fetch('http://192.168.43.90:3000/people', {
+    return fetch('http://192.168.8.18:3000/people', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -118,7 +120,9 @@ export default class PeopleScreen extends React.Component {
         this.getPeopleFromApi();
         ToastAndroid.show("Utilizador Adicionado!", ToastAndroid.SHORT)
       }
-      throw new Error('Network error');
+      else {
+        throw new Error('Network error');
+      }
     }).catch(error => {
       ToastAndroid.show("Houve algum erro", ToastAndroid.SHORT)
       console.log('There has been a problem with your fetch operation: ', error);
